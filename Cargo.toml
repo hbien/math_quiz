@@ -1,10 +1,10 @@
 [package]
 name = "math_quiz"
 version = "0.2.0"
-authors = []"Harold Bien"]
+authors = ["Harold Bien"]
 description = "An adaptive math quiz"
 keywords = ["math","quiz","education"]
-categories = []"education"]
+categories = ["education"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

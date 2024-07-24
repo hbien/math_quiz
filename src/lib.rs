@@ -10,7 +10,7 @@ use serde::{Serialize, Deserialize};
 /// MathOp
 /// 
 /// Mathematical operators
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub enum MathOp {
     Plus,
     Minus,
@@ -63,8 +63,12 @@ impl Problem {
             latest_time }
     } 
 
-    fn get_score(&self) -> u64 {
-        return self.num_wrong as u64 + self.latest_time.as_secs();
+    fn get_score(&self) -> f32 {
+        return self.num_wrong as f32 * 100.0 + self.latest_time.as_secs() as f32;
+    }
+
+    pub fn get_op(&self) -> MathOp {
+        return self.operator;
     }
 
     pub fn check_guess(&mut self, guess: u16, elapsed_time: Duration) -> bool {
@@ -96,11 +100,11 @@ pub fn init_problems(problems: &mut Vec<Problem>) {
 /// Add basic addition problems
 pub fn add_addition(problems: &mut Vec<Problem>) {
     // Start with addition problems of 0..10
-    for x in 0..=10 {
-        for y in 0..=10 {
-            problems.push(Problem::new([x, y], MathOp::Plus, 0, Duration::from_secs(15)));
+    for x in 1..=15 {
+        for y in 0..=13 {
+            problems.push(Problem::new([x, y], MathOp::Plus, 0, Duration::from_secs(5)));
             if x!=y {
-                problems.push(Problem::new([y, x], MathOp::Plus, 0, Duration::from_secs(15)));
+                problems.push(Problem::new([y, x], MathOp::Plus, 0, Duration::from_secs(5)));
             }
         }
     }   
@@ -109,9 +113,9 @@ pub fn add_addition(problems: &mut Vec<Problem>) {
 /// Add basic subtraction problems
 pub fn add_subtraction(problems: &mut Vec<Problem>) {
     // Start with basic subtractions problems of 0..10
-    for x in 0..=10 {
-        for y in 0..x {
-            problems.push(Problem::new([x,y], MathOp::Minus, 0, Duration::from_secs(15)));
+    for x in 0..=15 {
+        for y in 1..x {
+            problems.push(Problem::new([x,y], MathOp::Minus, 0, Duration::from_secs(10)));
         }
     }    
 }
@@ -120,19 +124,19 @@ pub fn add_subtraction(problems: &mut Vec<Problem>) {
 pub fn add_mult(problems: &mut Vec<Problem>) {
     // Start with basic subtractions problems of 0..10
     for x in 1..=5 {
-        for y in 1..=5 {
-            problems.push(Problem::new([x,y], MathOp::Multiply, 0, Duration::from_secs(30)));
+        for y in 1..=3 {
+            problems.push(Problem::new([x,y], MathOp::Multiply, 0, Duration::from_secs(15)));
         }
     }    
 }
 
 pub fn select_problem(problems: &Vec<Problem>) -> usize {
     // Compute maximum score
-    let max_score: u64 = problems.iter().map(|p| p.get_score()).sum();
+    let max_score: f32 = problems.iter().map(|p| p.get_score()).sum();
     // Get random number from 0 to maximum_score, inclusive
-    let pick = rand::thread_rng().gen_range(0..=max_score);
+    let pick = rand::thread_rng().gen_range(0.0..=max_score);
     // Now pick the problem
-    let mut score: u64 = 0;
+    let mut score: f32 = 0.0;
     for p in 0..problems.len() {
         score+=problems[p].get_score();
         if score>=pick {

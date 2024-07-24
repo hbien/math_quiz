@@ -5,6 +5,7 @@ use std::time::Instant;
 use math_quiz::Problem;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 #[derive(Parser, Debug)]
 #[command(name = "Math Quiz")]
@@ -45,6 +46,8 @@ fn main() -> std::io::Result<()> {
     if args.reset {
         println!("Resetting progress");
         math_quiz::init_problems(&mut problems);
+        // Save new reset, ignore any problems
+        let _ = save_progress(&problems, &args.config);
     }
     
     // Add more questions if requested
@@ -62,26 +65,42 @@ fn main() -> std::io::Result<()> {
         None => {}        
     }
 
+    // Ensure each math operation in question set is seen at least once
+    let mut op_seen = HashMap::new();
+
+    for p in &problems {
+        op_seen.insert(p.get_op(), false);
+    }    
+
     // Counter for number of consecutive correct answers
     let mut num_correct =0;
 
+    // Count total number of questions
+    let mut num_questions = 0;
+
     // Loop until 5 consecutive correct answers in less than 2 seconds
-    while num_correct<5 {
+    while num_questions<30 && (num_correct<5 || op_seen.iter().any(|x| *x.1==false)) {       
         // Select problem based on number of times presented, number incorrect, and time to answer correctly
         let prob = math_quiz::select_problem(&problems);
+
+        // Set flag for operation seen
+        op_seen.insert(problems[prob].get_op(), true);
+
+        // Tally new question
+        num_questions+=1;
 
         // Loop until correct answer entered
 
         // Start the timer
         let timer = Instant::now();
 
-        loop {
+        loop {            
             // Print problem        
-            print!("{}", problems[prob]);
+            print!("#{}: {}", &num_questions, problems[prob]);
             // Flush since no endline
             io::stdout().flush().unwrap();
         
-            // Get answer
+            // Get answer            
             let mut guess = String::new();
             io::stdin()
             .read_line(&mut guess)
@@ -113,7 +132,7 @@ fn main() -> std::io::Result<()> {
             }            
         }        
     }
-    
+   
     println!("Congratulations! You have finished for today.");
     return save_progress(&problems, &args.config);
 }
