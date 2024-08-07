@@ -4,6 +4,7 @@
 
 use std::fmt;
 use rand::Rng;
+use rand::distributions::{Distribution, Uniform};
 use std::time::Duration;
 use serde::{Serialize, Deserialize};
 
@@ -43,6 +44,11 @@ pub struct Problem {
     latest_time: Duration
 }
 
+/*
+impl Rng for Problem {
+
+} */
+
 impl std::fmt::Display for Problem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         return write!(f, "{} {} {} = ", self.operands[0], self.operator, self.operands[1]);
@@ -64,7 +70,7 @@ impl Problem {
     } 
 
     fn get_score(&self) -> f32 {
-        return self.num_wrong as f32 * 100.0 + self.latest_time.as_secs() as f32;
+        return self.num_wrong as f32 * 30.0 + self.latest_time.as_secs() as f32;
     }
 
     pub fn get_op(&self) -> MathOp {
@@ -147,6 +153,12 @@ pub fn select_problem(problems: &Vec<Problem>) -> usize {
     return problems.len()-1;
 }
 
+/// Sort problems for presentation serially using random process which favors incorrectly answered questions as well as
+/// quesions which took a long time to answer
+pub fn sort_problems(problems: &mut Vec<Problem>) {
+    let rng = Uniform::from(0..=10000);
+    
+}
 #[cfg(test)]
 mod tests {
     // Pull all references above into scope
@@ -165,8 +177,8 @@ mod tests {
             num_selected[select_problem(&problems)]+=1;
         }
         eprintln!("{:?}", num_selected);
-        assert!(i32::abs(num_selected[0]/100000 - 60)<=1, "We expected 60% for first problem");
-        assert!(i32::abs(num_selected[1]/100000 - 30)<=1, "Expected 30% for second problem");
-        assert!(i32::abs(num_selected[2]/100000 - 10)<=1, "Expected 10% for third problem");
+        assert!(i32::abs(num_selected[0]/100000 - 66)<=1, "We expected 66% for first problem");
+        assert!(i32::abs(num_selected[1]/100000 - 23)<=1, "Expected 30% for second problem");
+        assert!(i32::abs(num_selected[2]/100000 - 11)<=1, "Expected 10% for third problem");
     }
 }

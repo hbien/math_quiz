@@ -79,7 +79,7 @@ fn main() -> std::io::Result<()> {
     let mut num_questions = 0;
 
     // Loop until 5 consecutive correct answers in less than 2 seconds
-    while num_questions<30 && (num_correct<5 || op_seen.iter().any(|x| *x.1==false)) {       
+    while num_questions<30 && (num_correct<5) /* || op_seen.iter().any(|x| *x.1==false)) */ {       
         // Select problem based on number of times presented, number incorrect, and time to answer correctly
         let prob = math_quiz::select_problem(&problems);
 
