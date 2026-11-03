@@ -57,6 +57,7 @@ fn main() -> std::io::Result<()> {
                 "+" | "plus" => math_quiz::add_addition(&mut problems),
                 "-" | "minus" => math_quiz::add_subtraction(&mut problems),
                 "x" | "*" | "multiplication" => math_quiz::add_mult(&mut problems),
+                "/" | "division" => math_quiz::add_division(&mut problems),
                 _ => eprintln!("Unknown question type to add: {}", question_type),         
             }
             // Save new questions and then quit
@@ -66,8 +67,8 @@ fn main() -> std::io::Result<()> {
     }
 
     // Ensure each math operation in question set is seen at least once
-    let mut op_seen = HashMap::new();
-
+    let mut op_seen: HashMap<math_quiz::Operator, bool> = problems.iter().map(|p| (p.get_op(), false)).collect();
+    
     for p in &problems {
         op_seen.insert(p.get_op(), false);
     }    
@@ -96,7 +97,7 @@ fn main() -> std::io::Result<()> {
 
         loop {            
             // Print problem        
-            print!("#{}: {}", &num_questions, problems[prob]);
+            print!("#{}: {}", num_questions, problems[prob]);
             // Flush since no endline
             io::stdout().flush().unwrap();
         
@@ -107,7 +108,7 @@ fn main() -> std::io::Result<()> {
             .expect("Unable to read from stdin");
 
             // Try to convert answer to numeric value
-            let guess: u16 = match guess
+            let guess: u8 = match guess
             .trim()
             .parse() {
                 Ok(num) => num,
@@ -118,10 +119,13 @@ fn main() -> std::io::Result<()> {
                 }
             };
 
+            // Stop the clock
+            let elapsed_time = timer.elapsed();
+
             // Check and see if correct answer
-            if problems[prob].check_guess(guess, timer.elapsed()) {            
-                println!("Correct! It took you {} seconds to solve.", problems[prob].get_time().as_secs());
-                if problems[prob].get_time().as_secs()<=2 {
+            if problems[prob].check_guess(guess, elapsed_time) {            
+                println!("Correct! It took you {} seconds to solve.", elapsed_time.as_secs());
+                if elapsed_time.as_secs()<=2 {
                     num_correct+=1;
                 }
                 break;          
@@ -134,7 +138,8 @@ fn main() -> std::io::Result<()> {
     }
    
     println!("Congratulations! You have finished for today.");
-    return save_progress(&problems, &args.config);
+    // return
+    save_progress(&problems, &args.config)
 }
 
 /// Load question bank from file, and reset if any errors encountered
@@ -147,9 +152,9 @@ fn load_progress(problems: &mut Vec<Problem>, path: &Option<PathBuf>) {
     // Read entire file into string
     let saved_progress = fs::read_to_string(&path);
     // Replace problems with config file; initialize if any errors encountered
-    if saved_progress.is_ok() {        
+    if let Ok(saved_progress) = saved_progress {
         println!("Reading progress from {}", path.display());
-        let new_problems: Vec<Problem> = serde_json::from_str(&saved_progress.unwrap()).expect("Error deserializing problems");
+        let new_problems: Vec<Problem> = serde_json::from_str(&saved_progress).expect("Error deserializing problems");
         *problems=new_problems;
     } else {        
         println!("Unable to open progress file - resetting.");
@@ -166,5 +171,7 @@ fn save_progress(problems: &Vec<Problem>, path: &Option<PathBuf>) -> io::Result<
     };
     println!("Saving progress to {}", path.display());
     // Save progress
-    return Ok(fs::write(path, serde_json::to_string(&problems).expect("Error serializing problems")).expect("Error saving progress file"));
+    fs::write(path, serde_json::to_string(&problems).expect("Error serializing problems")).expect("Error saving progress file");
+    //return
+    Ok(())
 }
