@@ -36,7 +36,7 @@ pub const TIME_WEIGHT: WeightType = 1.0;
 /// String used to display addition
 pub const ADD_SYMBOL: &str = "+";
 pub const SUB_SYMBOL: &str = "-";
-pub const MUL_SYMBOL: &str = "*";
+pub const MUL_SYMBOL: &str = "x";
 pub const DIV_SYMBOL: &str = "\u{00f7}";
 
 /// Compile time checks
@@ -121,7 +121,7 @@ impl Operator {
 /// assert_eq!(problem.get_num_wrong(), 0);
 /// assert_eq!(problem.get_time(), Duration::from_secs(10));
 /// assert_eq!(problem.get_weight(), BASELINE_WEIGHT + 0.0 * ERROR_WEIGHT + 10.0 * TIME_WEIGHT);
-/// assert_eq!(problem.to_string(), concat!("6 * 3 = "));
+/// assert_eq!(problem.to_string(), concat!("6 x 3 = "));
 /// 
 /// ```
 #[derive(Serialize, Deserialize, Debug)]
